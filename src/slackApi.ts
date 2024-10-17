@@ -156,6 +156,5 @@ export async function getUserProfileSections(
     };
   });
 
-  console.log(JSON.stringify(sections, null, 2));
   return sections;
 }
