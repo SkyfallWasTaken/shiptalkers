@@ -114,6 +114,7 @@ export const UserSectionsResult = z.object({
   }),
 });
 
+// If you ever need to use this code, all I can say is good luck, and God bless.
 export async function getUserProfileSections(
   userId: string,
   xoxc: string,
