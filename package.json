@@ -9,7 +9,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "cookie": "^1.0.1",
+    "canvas": "^2.11.2",
     "dotenv": "^16.4.5",
     "zod": "^3.23.8"
   }
