@@ -113,6 +113,7 @@ export const UserSectionsResult = z.object({
     }),
   }),
 });
+
 export async function getUserProfileSections(
   userId: string,
   xoxc: string,
@@ -127,34 +128,26 @@ export async function getUserProfileSections(
     `https://slack.com/api/users.profile.getSections`,
     {
       method: "POST",
-      headers: {
-        Cookie: authCookie,
-      },
+      headers: { Cookie: authCookie },
       body: formData,
     }
   );
-  if (!response.ok) throw new Error("Status code != 200");
-  const r = await response.json();
-  const data = UserSectionsResult.parse(r);
-  if (!data.ok) throw new Error("Slack profile API returned error");
-  const sections = data.result.data.user.profileSections.map((section) => {
-    return {
-      label: section.label,
-      profileElements: section.profileElements
-        .map((element) => {
-          if (!element.uri && !element.text && !element.date) {
-            return null;
-          }
-          return {
-            date: element.date,
-            uri: element.uri,
-            text: element.text,
-            label: element.label,
-          };
-        })
-        .filter(Boolean), // Removes falsy values
-    };
-  });
 
-  return sections;
+  if (!response.ok) throw new Error("Status code != 200");
+
+  const result = await response.json();
+  const data = UserSectionsResult.parse(result);
+
+  if (!data.ok) throw new Error("Slack profile API returned error");
+
+  return data.result.data.user.profileSections.map(
+    ({ label, profileElements }) => ({
+      label,
+      profileElements: profileElements
+        .map(({ date, uri, text, label }) =>
+          date || uri || text ? { date, uri, text, label } : null
+        )
+        .filter(Boolean),
+    })
+  );
 }
