@@ -40,17 +40,17 @@ const slackMember = await fetchMemberAnalyticsData(
   username,
   env.XOXC,
   env.XOXD,
-  env.WORKSPACE
+  env.WORKSPACE,
 );
 const slackProfile = await getUserProfile(
   slackMember.user_id,
   env.XOXC,
-  env.XOXD
+  env.XOXD,
 );
 const slackProfileSections = await getUserProfileSections(
   slackMember.user_id,
   env.XOXC,
-  env.XOXD
+  env.XOXD,
 );
 const githubUrl = slackProfileSections
   .flatMap((section) => section.profileElements)

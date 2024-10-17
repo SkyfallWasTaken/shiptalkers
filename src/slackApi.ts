@@ -23,7 +23,7 @@ export async function fetchMemberAnalyticsData(
   username: string,
   xoxc: string,
   xoxd: string,
-  workspace: string
+  workspace: string,
 ) {
   const formData = new FormData();
   formData.append("token", xoxc);
@@ -44,7 +44,7 @@ export async function fetchMemberAnalyticsData(
         Authority: `${workspace}.slack.com`,
         Cookie: authCookie, // We don't really need anything fancy here.
       },
-    }
+    },
   );
 
   const data = AnalyticsResult.parse(await response.json());
@@ -68,7 +68,7 @@ export const UserProfileResult = z.object({
 export async function getUserProfile(
   userId: string,
   xoxc: string,
-  xoxd: string
+  xoxd: string,
 ) {
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const formData = new FormData();
@@ -105,9 +105,9 @@ export const UserSectionsResult = z.object({
                 uri: z.string().url().optional(),
                 text: z.string().optional(),
                 label: z.string(),
-              })
+              }),
             ),
-          })
+          }),
         ),
       }),
     }),
@@ -117,7 +117,7 @@ export const UserSectionsResult = z.object({
 export async function getUserProfileSections(
   userId: string,
   xoxc: string,
-  xoxd: string
+  xoxd: string,
 ) {
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const formData = new FormData();
@@ -130,7 +130,7 @@ export async function getUserProfileSections(
       method: "POST",
       headers: { Cookie: authCookie },
       body: formData,
-    }
+    },
   );
 
   if (!response.ok) throw new Error("Status code != 200");
@@ -145,9 +145,9 @@ export async function getUserProfileSections(
       label,
       profileElements: profileElements
         .map(({ date, uri, text, label }) =>
-          date || uri || text ? { date, uri, text, label } : null
+          date || uri || text ? { date, uri, text, label } : null,
         )
         .filter(Boolean),
-    })
+    }),
   );
 }
