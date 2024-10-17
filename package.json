@@ -1,0 +1,16 @@
+{
+  "name": "shiptalkers",
+  "module": "src/index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "cookie": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}
