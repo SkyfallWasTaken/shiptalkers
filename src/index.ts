@@ -1,18 +1,24 @@
 import "dotenv/config";
 import { z } from "zod";
 import { createCanvas, loadImage } from "canvas";
+import {
+  fetchMemberAnalyticsData,
+  getUserProfile,
+  getUserProfileSections,
+} from "./slackApi";
 
 export const Env = z.object({
   WORKSPACE: z.string(),
   TEAM_ID: z.string().length(9),
-  C_TOKEN: z.string(),
-  D_TOKEN: z.string(),
+  XOXC: z.string(),
+  XOXD: z.string(),
 });
 const env = Env.parse(process.env);
-env.D_TOKEN = decodeURIComponent(env.D_TOKEN);
+env.XOXD = decodeURIComponent(env.XOXD);
 
 export const MemberActivity = z.object({
   username: z.string(),
+  user_id: z.string(),
   display_name: z.string(),
   date_last_active: z.number().nonnegative(),
   messages_posted: z.number().nonnegative(),
@@ -30,35 +36,27 @@ export const AnalyticsResult = z.object({
 });
 
 const username = "mahadkalam1234"; // FIXME: change
-const formData = new FormData();
-formData.append("token", env.C_TOKEN);
-formData.append("date_range", "30d");
-formData.append("count", "1");
-formData.append("sort_column", "username");
-formData.append("sort_direction", "asc");
-formData.append("query", username);
-formData.append("count", "1");
-
-const dbg = (...args: any[]) => {
-  console.debug(...args);
-  return args.length === 1 ? args[0] : args;
-};
-const response = await fetch(
-  `https://${env.WORKSPACE}.slack.com/api/admin.analytics.getMemberAnalytics`,
-  {
-    method: "POST",
-    body: formData,
-    headers: {
-      Authority: `${env.WORKSPACE}.slack.com`,
-      Cookie: `d=${encodeURIComponent(env.D_TOKEN)}`, // We don't really need anything fancy here.
-    },
-  }
+const slackMember = await fetchMemberAnalyticsData(
+  username,
+  env.XOXC,
+  env.XOXD,
+  env.WORKSPACE
 );
-const data = AnalyticsResult.parse(dbg(await response.json()));
-if (!data.ok) {
-  throw new Error("Failed to fetch analytics data");
-}
-const member = data.member_activity[0];
-if (member.username !== username) {
-  throw new Error(`${member.username} != ${username}`);
-}
+const slackProfile = await getUserProfile(
+  slackMember.user_id,
+  env.XOXC,
+  env.XOXD
+);
+const slackProfileSections = await getUserProfileSections(
+  slackMember.user_id,
+  env.XOXC,
+  env.XOXD
+);
+const githubUrl = slackProfileSections
+  .flatMap((section) => section.profileElements)
+  .find((element) => element?.uri?.includes("github.com"))?.uri;
+const avatarUrl = slackProfile.image_original;
+if (!githubUrl) throw new Error("No github url found");
+if (!avatarUrl) throw new Error("No avatar url found");
+
+console.log(avatarUrl, githubUrl);
