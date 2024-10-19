@@ -1,12 +1,14 @@
 import "dotenv/config";
 import { z } from "zod";
-import { createCanvas, loadImage } from "canvas";
 import {
   fetchMemberAnalyticsData,
   getUserProfile,
   getUserProfileSections,
 } from "./slackApi";
 import { flattenObject } from "./util";
+import type { FinalData } from "./image";
+import generateImage from "./image";
+import { writeFile } from "fs/promises";
 
 export const Env = z.object({
   WORKSPACE: z.string(),
@@ -89,7 +91,7 @@ const percentage = Math.floor(
   (slackTimeEstimateSecs / codingTimeSeconds) * 100
 );
 
-const overallProfile = {
+const overallProfile: FinalData = {
   avatarUrl,
   slack: {
     displayName: slackAnalytics.display_name,
@@ -107,3 +109,7 @@ const overallProfile = {
 };
 
 console.table(flattenObject(overallProfile));
+await writeFile(
+  "output.png",
+  new Uint8Array(await generateImage(overallProfile))
+);

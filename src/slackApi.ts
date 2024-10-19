@@ -54,7 +54,7 @@ export async function fetchMemberAnalyticsData(
     throw new Error("Failed to fetch analytics data");
   }
   if (data.num_found > 1) {
-    console.warn(Bun.color("orange", "ansi"), `Found ${data.num_found} users`);
+    console.warn(`[WARN] Found ${data.num_found} users`);
   }
   const member = data.member_activity.find(
     (member) => member.username === username
