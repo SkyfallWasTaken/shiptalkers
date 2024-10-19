@@ -103,13 +103,10 @@ const overallProfile: FinalData = {
   },
   codingTimeSeconds,
   slackTimeEstimate: {
-    slackTimeEstimateSecs,
+    seconds: slackTimeEstimateSecs,
     percentage,
   },
 };
 
 console.table(flattenObject(overallProfile));
-await writeFile(
-  "output.png",
-  new Uint8Array(await generateImage(overallProfile))
-);
+await writeFile("output.svg", await generateImage(overallProfile));

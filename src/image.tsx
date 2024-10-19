@@ -1,5 +1,4 @@
 import satori from "satori";
-import { Transformer } from '@napi-rs/image';
 import { readFile } from "fs/promises"
 
 // TODO: move somewhere else
@@ -24,7 +23,7 @@ const regularFontBuffer = await readFile('fonts/Outfit-Regular.ttf')
 const boldFontBuffer = await readFile('fonts/Outfit-Bold.ttf')
 
 export default async function generateImage(data: FinalData) {
-  const svg = await satori(
+  return await satori(
     <div tw="flex flex-col w-full h-full items-center justify-center bg-white">
       <div tw="bg-gray-50 flex w-full">
         <div tw="flex flex-col md:flex-row w-full py-12 px-4 md:items-center justify-between p-8">
@@ -62,7 +61,4 @@ export default async function generateImage(data: FinalData) {
       ],
     },
   )
-
-  const transformer = Transformer.fromSvg(svg);
-  return await transformer.png();
 }
