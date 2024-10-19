@@ -74,17 +74,20 @@ if (!wakaResponse.ok)
   throw new Error(`Status code != 200, it was ${wakaResponse.status}`);
 const waka = await wakaResponse.json();
 const codingTimeSeconds: number = waka.data.total_seconds;
-const slackTimeEstimateSecs =
+const slackTimeEstimateSecs = Math.floor(
   slackAnalytics.messages_posted * 30 +
-  slackAnalytics.slack_huddles_count * 30 * 60 +
-  slackAnalytics.reactions_added * 5 +
-  slackAnalytics.days_active_desktop * 60 * 20 +
-  (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
-    60 *
-    10;
+    slackAnalytics.slack_huddles_count * 30 * 60 +
+    slackAnalytics.reactions_added * 5 +
+    slackAnalytics.days_active_desktop * 60 * 20 +
+    (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
+      60 *
+      10
+);
 
 // Work out the percentage of more time spent on slack
-const percentage = (slackTimeEstimateSecs / codingTimeSeconds) * 100;
+const percentage = Math.floor(
+  (slackTimeEstimateSecs / codingTimeSeconds) * 100
+);
 
 const overallProfile = {
   avatarUrl,
