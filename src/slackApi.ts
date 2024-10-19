@@ -15,7 +15,7 @@ export const MemberActivity = z.object({
 });
 export const AnalyticsResult = z.object({
   ok: z.boolean(),
-  num_found: z.number().min(1).max(1),
+  num_found: z.number().min(1),
   member_activity: z.array(MemberActivity).min(1),
 });
 
@@ -23,7 +23,7 @@ export async function fetchMemberAnalyticsData(
   username: string,
   xoxc: string,
   xoxd: string,
-  workspace: string,
+  workspace: string
 ) {
   const formData = new FormData();
   formData.append("token", xoxc);
@@ -32,7 +32,7 @@ export async function fetchMemberAnalyticsData(
   formData.append("sort_column", "username");
   formData.append("sort_direction", "asc");
   formData.append("query", username);
-  formData.append("count", "1");
+  formData.append("count", "3");
 
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const response = await fetch(
@@ -44,16 +44,24 @@ export async function fetchMemberAnalyticsData(
         Authority: `${workspace}.slack.com`,
         Cookie: authCookie, // We don't really need anything fancy here.
       },
-    },
+    }
   );
 
-  const data = AnalyticsResult.parse(await response.json());
+  const json = await response.json();
+  // console.log(json);
+  const data = AnalyticsResult.parse(json);
   if (!data.ok) {
     throw new Error("Failed to fetch analytics data");
   }
-  const member = data.member_activity[0];
-  if (member.username !== username) {
-    throw new Error(`${member.username} != ${username}`);
+  if (data.num_found > 1) {
+    console.warn(Bun.color("orange", "ansi"), `Found ${data.num_found} users`);
+  }
+  const member = data.member_activity.find(
+    (member) => member.username === username
+  );
+
+  if (!member) {
+    throw new Error(`User ${username} not found`);
   }
 
   return member;
@@ -68,7 +76,7 @@ export const UserProfileResult = z.object({
 export async function getUserProfile(
   userId: string,
   xoxc: string,
-  xoxd: string,
+  xoxd: string
 ) {
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const formData = new FormData();
@@ -105,9 +113,9 @@ export const UserSectionsResult = z.object({
                 uri: z.string().url().optional(),
                 text: z.string().optional(),
                 label: z.string(),
-              }),
+              })
             ),
-          }),
+          })
         ),
       }),
     }),
@@ -118,7 +126,7 @@ export const UserSectionsResult = z.object({
 export async function getUserProfileSections(
   userId: string,
   xoxc: string,
-  xoxd: string,
+  xoxd: string
 ) {
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const formData = new FormData();
@@ -131,7 +139,7 @@ export async function getUserProfileSections(
       method: "POST",
       headers: { Cookie: authCookie },
       body: formData,
-    },
+    }
   );
 
   if (!response.ok) throw new Error("Status code != 200");
@@ -146,9 +154,9 @@ export async function getUserProfileSections(
       label,
       profileElements: profileElements
         .map(({ date, uri, text, label }) =>
-          date || uri || text ? { date, uri, text, label } : null,
+          date || uri || text ? { date, uri, text, label } : null
         )
         .filter(Boolean),
-    }),
+    })
   );
 }
