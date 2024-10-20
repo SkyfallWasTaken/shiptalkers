@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { Temporal } from "@js-temporal/polyfill";
+import { Mode } from ".";
 
 export const MemberActivity = z.object({
   username: z.string(),
@@ -23,11 +25,25 @@ export async function fetchMemberAnalyticsData(
   username: string,
   xoxc: string,
   xoxd: string,
-  workspace: string
+  workspace: string,
+  mode: Mode = Mode.Last30Days
 ) {
   const formData = new FormData();
   formData.append("token", xoxc);
-  formData.append("date_range", "30d");
+  if (mode != Mode.Last30Days) {
+    const currentDate = Temporal.Now.plainDateISO();
+    const threeDaysAgo = currentDate.subtract({ days: 3 });
+    const startDate = threeDaysAgo.subtract({ years: 1 });
+    const formattedEndDate = threeDaysAgo.toString();
+    const formattedStartDate = startDate.toString();
+    console.log(
+      `[DEBUG] Fetching analytics data from ${formattedStartDate} to ${formattedEndDate}`
+    );
+    formData.append("start_date", formattedStartDate);
+    formData.append("end_date", formattedEndDate);
+  } else {
+    formData.append("date_range", "30d");
+  }
   formData.append("count", "1");
   formData.append("sort_column", "username");
   formData.append("sort_direction", "asc");

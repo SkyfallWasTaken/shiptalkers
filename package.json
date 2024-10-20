@@ -14,6 +14,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "^0.4.4",
     "@resvg/resvg-js": "^2.6.2",
     "@slack/bolt": "^4.0.0",
     "@slack/web-api": "^7.6.0",

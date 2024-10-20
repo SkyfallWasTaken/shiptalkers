@@ -7,6 +7,16 @@ import generateImage from "./image";
 import { WebClient } from "@slack/web-api";
 const { App } = await import("@slack/bolt");
 
+import { toTemporalInstant } from "@js-temporal/polyfill";
+// @ts-ignore
+Date.prototype.toTemporalInstant = toTemporalInstant;
+
+export enum Mode {
+  Last30Days,
+  LastYear,
+  AdrianMethod,
+}
+
 export const Env = z.object({
   WORKSPACE: z.string(),
   SLACK_CHANNEL_ID: z.string().length(11),
@@ -39,11 +49,20 @@ bolt.message(async ({ message }) => {
     });
     if (!slackProfile) throw new Error("No profile found");
 
+    const oneYear = message.text?.toLowerCase().includes("one year") || false;
+    const adrianMethod =
+      message.text?.toLowerCase().includes("adrian method") || false;
+    const mode = adrianMethod
+      ? Mode.AdrianMethod
+      : oneYear
+        ? Mode.LastYear
+        : Mode.Last30Days;
     const slackAnalytics = await fetchMemberAnalyticsData(
       slackInfo.user?.name!,
       env.XOXC,
       env.XOXD,
-      env.WORKSPACE
+      env.WORKSPACE,
+      mode
     );
 
     const rawGithubUrl = Object.values(slackProfile.fields!).find((field) =>
@@ -55,11 +74,16 @@ bolt.message(async ({ message }) => {
     const githubUrl = new URL(rawGithubUrl);
     const githubUsername = githubUrl.pathname.split("/")[1];
 
+    const wakaMode = (() => {
+      if (mode == Mode.LastYear) return "last_year";
+      if (mode == Mode.AdrianMethod) return "all_time";
+      return "last_30_days";
+    })();
     const wakaResponse = await fetch(
       env.WAKATIME_STATS_ENDPOINT.replace(
         ":id",
         slackAnalytics.user_id
-      ).replace(":range", "last_30_days")
+      ).replace(":range", wakaMode)
     );
     if (!wakaResponse.ok)
       throw new Error(`Status code != 200, it was ${wakaResponse.status}`);
