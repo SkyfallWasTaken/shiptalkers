@@ -4,7 +4,6 @@ import { fetchMemberAnalyticsData } from "./slackAnalytics";
 import { flattenObject } from "./util";
 import type { FinalData } from "./image";
 import generateImage from "./image";
-import { writeFile } from "fs/promises";
 import { WebClient } from "@slack/web-api";
 
 export const Env = z.object({
@@ -21,10 +20,6 @@ env.XOXD = decodeURIComponent(env.XOXD);
 const username = "mahadkalam1234"; // FIXME: change
 
 const slack = new WebClient(env.XOXB);
-slack.chat.postMessage({
-  channel: "C07N4NYMUN4",
-  text: "Hello world!",
-});
 
 const slackAnalytics = await fetchMemberAnalyticsData(
   username,
@@ -91,4 +86,14 @@ const overallProfile: FinalData = {
 };
 
 console.table(flattenObject(overallProfile));
-await writeFile("output.svg", await generateImage(overallProfile));
+const png = await generateImage(overallProfile);
+
+const fileUploadResponse = await slack.filesUploadV2({
+  channel_id: "C07N4NYMUN4",
+  initial_comment: "Here is the generated image",
+  filename: "generated-image.png",
+  file: png,
+});
+if (!fileUploadResponse.ok) throw new Error("Failed to upload file");
+const file = fileUploadResponse.files[0];
+if (!file) throw new Error("No file found");
