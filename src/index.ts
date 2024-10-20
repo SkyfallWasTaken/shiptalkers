@@ -39,7 +39,7 @@ export const AnalyticsResult = z.object({
   member_activity: z.array(MemberActivity).min(1),
 });
 
-const username = "dillonb07dev"; // FIXME: change
+const username = "mahadkalam1234"; // FIXME: change
 const slackAnalytics = await fetchMemberAnalyticsData(
   username,
   env.XOXC,
