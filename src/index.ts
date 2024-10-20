@@ -17,7 +17,7 @@ export const Env = z.object({
 const env = Env.parse(process.env);
 env.XOXD = decodeURIComponent(env.XOXD);
 
-const username = "mahadkalam1234"; // FIXME: change
+const username = "liliaskydostie"; // FIXME: change
 
 const slack = new WebClient(env.XOXB);
 
@@ -65,7 +65,7 @@ const slackTimeEstimateSecs = Math.floor(
 
 // Work out the percentage of more time spent on slack
 const percentage = Math.floor(
-  (slackTimeEstimateSecs / codingTimeSeconds) * 100
+  ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100
 );
 
 const overallProfile: FinalData = {
