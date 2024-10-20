@@ -47,6 +47,7 @@ bolt.message(async ({ message }) => {
     const slackInfo = await slack.users.info({
       user: message.user,
     });
+    if (slackInfo.user?.is_bot) return;
     if (!slackProfile) throw new Error("No profile found");
 
     const oneYear = message.text?.toLowerCase().includes("one year") || false;
@@ -68,9 +69,10 @@ bolt.message(async ({ message }) => {
     const rawGithubUrl = Object.values(slackProfile.fields!).find((field) =>
       field.value?.includes("github.com")
     )?.value;
-    const avatarUrl = slackProfile.image_original;
+    const avatarUrl =
+      slackProfile.image_original ||
+      "https://ca.slack-edge.com/T0266FRGM-U07SPF9D4BU-g7bf54aa89eb-48";
     if (!rawGithubUrl) throw new Error("No github url found");
-    if (!avatarUrl) throw new Error("No avatar url found");
     const githubUrl = new URL(rawGithubUrl);
     const githubUsername = githubUrl.pathname.split("/")[1];
 
