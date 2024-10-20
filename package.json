@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@resvg/resvg-js": "^2.6.2",
+    "@slack/bolt": "^4.0.0",
     "@slack/web-api": "^7.6.0",
     "dotenv": "^16.4.5",
     "preact": "^10.24.3",
