@@ -8,7 +8,7 @@ import { WebClient } from "@slack/web-api";
 
 export const Env = z.object({
   WORKSPACE: z.string(),
-  TEAM_ID: z.string().length(9),
+  SLACK_CHANNEL_ID: z.string().length(11),
   XOXC: z.string().startsWith("xoxc-", "XOXC is invalid"),
   XOXD: z.string().startsWith("xoxd-", "XOXD is invalid"),
   XOXB: z.string().startsWith("xoxb-", "XOXB is invalid"),
@@ -89,9 +89,8 @@ console.table(flattenObject(overallProfile));
 const png = await generateImage(overallProfile);
 
 const fileUploadResponse = await slack.filesUploadV2({
-  channel_id: "C07N4NYMUN4",
-  initial_comment: "Here is the generated image",
-  filename: "generated-image.png",
+  channel_id: env.SLACK_CHANNEL_ID,
+  filename: "shiptalkers.png",
   file: png,
 });
 if (!fileUploadResponse.ok) throw new Error("Failed to upload file");
