@@ -91,7 +91,7 @@ bolt.message(async ({ message }) => {
     if (!wakaResponse.ok) {
       return slack.chat.postMessage({
         channel: message.channel,
-        text: "Failed to fetch WakaTime data!\nPlease https://waka.hackclub.com/settings#permissions and set the time range to `-1`",
+        text: "Failed to fetch WakaTime data!\nPlease go to https://waka.hackclub.com/settings#permissions and set the time range to `-1`",
         thread_ts: message.ts,
       });
     }
