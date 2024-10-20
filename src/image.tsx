@@ -55,7 +55,7 @@ export default async function generateImage(data: FinalData) {
           <StatCard label="Time spent coding" value={formatDuration(data.codingTimeSeconds)} />
         </div>
       </div>
-      <span tw="text-[#f9e2af] font-semibold text-xl absolute bottom-5">Get yours at #shiptalkers!</span>
+      <span tw="text-[#f9e2af] font-semibold text-xl absolute bottom-5">Get yours at #ship-talkers!</span>
     </div>,
     {
       width: WIDTH,
