@@ -64,7 +64,7 @@ const slackTimeEstimateSecs = Math.floor(
 );
 
 // Work out the percentage of more time spent on slack
-const percentage = Math.floor(
+const percentage = Math.round(
   ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100
 );
 

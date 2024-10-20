@@ -46,7 +46,7 @@ export default async function generateImage(data: FinalData) {
         <h2 tw="flex flex-wrap items-center justify-center text-4xl font-bold tracking-tight">
           <img src={data.avatarUrl} width="64" height="64" tw="rounded-full mr-3" />
           <span tw="mr-2">{data.slack.displayName} spends</span>
-          <span tw={`${data.slackTimeEstimate.percentage > 0 ? "text-red-400" : "text-green-400"} mr-2`}>{Math.abs(data.slackTimeEstimate.percentage)}% {data.slackTimeEstimate.percentage > 0 ? "more" : "less"} time</span>
+          <span tw={`${data.slackTimeEstimate.seconds > data.codingTimeSeconds ? "text-red-400" : "text-green-400"} mr-2`}>{Math.abs(data.slackTimeEstimate.percentage)}% {data.slackTimeEstimate.seconds > data.codingTimeSeconds ? "more" : "less"} time</span>
           <span tw="mr-2">on Slack than coding</span>
         </h2>
         <div tw="mt-1 flex md:mt-0 justify-center">
