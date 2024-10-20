@@ -66,9 +66,10 @@ bolt.message(async ({ message }) => {
       mode
     );
 
-    const rawGithubUrl = Object.values(slackProfile.fields!).find((field) =>
-      field.value?.includes("github.com")
-    )?.value;
+    const rawGithubUrl =
+      Object.values(slackProfile.fields!).find((field) =>
+        field.value?.includes("github.com")
+      )?.value || "https://github.com/ghost"; // FIXME: yes
     const avatarUrl =
       slackProfile.image_original ||
       "https://ca.slack-edge.com/T0266FRGM-U07SPF9D4BU-g7bf54aa89eb-48";
