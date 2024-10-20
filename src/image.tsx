@@ -14,7 +14,7 @@ export interface FinalData {
   };
   codingTimeSeconds: number;
   slackTimeEstimate: {
-    slackTimeEstimateSecs: number;
+    seconds: number;
     percentage: number;
   };
 }

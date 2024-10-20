@@ -11,7 +11,7 @@ export const MemberActivity = z.object({
   days_active_desktop: z.number().nonnegative(),
   days_active_android: z.number().nonnegative(),
   days_active_ios: z.number().nonnegative(),
-  slack_huddles_count: z.number().nonnegative(),
+  // slack_huddles_count: z.number().nonnegative(), Always 0 on non-Enterprise plans
 });
 export const AnalyticsResult = z.object({
   ok: z.boolean(),

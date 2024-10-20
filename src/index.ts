@@ -39,7 +39,7 @@ export const AnalyticsResult = z.object({
   member_activity: z.array(MemberActivity).min(1),
 });
 
-const username = "mahadkalam1234"; // FIXME: change
+const username = "dillonb07dev"; // FIXME: change
 const slackAnalytics = await fetchMemberAnalyticsData(
   username,
   env.XOXC,
@@ -78,7 +78,6 @@ const waka = await wakaResponse.json();
 const codingTimeSeconds: number = waka.data.total_seconds;
 const slackTimeEstimateSecs = Math.floor(
   slackAnalytics.messages_posted * 30 +
-    slackAnalytics.slack_huddles_count * 30 * 60 +
     slackAnalytics.reactions_added * 5 +
     slackAnalytics.days_active_desktop * 60 * 20 +
     (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
