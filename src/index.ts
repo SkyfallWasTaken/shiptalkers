@@ -95,5 +95,3 @@ const fileUploadResponse = await slack.filesUploadV2({
   file: png,
 });
 if (!fileUploadResponse.ok) throw new Error("Failed to upload file");
-const file = fileUploadResponse.files[0];
-if (!file) throw new Error("No file found");
