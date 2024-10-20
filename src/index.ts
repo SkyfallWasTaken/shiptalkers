@@ -87,8 +87,13 @@ bolt.message(async ({ message }) => {
         slackAnalytics.user_id
       ).replace(":range", wakaMode)
     );
-    if (!wakaResponse.ok)
-      throw new Error(`Status code != 200, it was ${wakaResponse.status}`);
+    if (!wakaResponse.ok) {
+      return slack.chat.postMessage({
+        channel: message.channel,
+        text: "Failed to fetch WakaTime data!\nPlease https://waka.hackclub.com/settings#permissions and set the time range to `-1`",
+        thread_ts: message.ts,
+      });
+    }
     const waka = await wakaResponse.json();
     const codingTimeSeconds: number = waka.data.total_seconds;
     const slackTimeEstimateSecs = Math.floor(
