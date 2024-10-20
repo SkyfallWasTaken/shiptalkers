@@ -48,7 +48,7 @@ export async function fetchMemberAnalyticsData(
   formData.append("sort_column", "username");
   formData.append("sort_direction", "asc");
   formData.append("query", username);
-  formData.append("count", "30");
+  formData.append("count", "500");
 
   const authCookie = `d=${encodeURIComponent(xoxd)}`;
   const response = await fetch(
