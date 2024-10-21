@@ -1,15 +1,11 @@
-# shiptalkers
+# Shiptalkers
+![image](https://github.com/SkyfallWasTaken/shiptalkers/blob/main/shiptalkers.png)
 
-To install dependencies:
+Are you a real maker or is it all just shiptalk? Drop a message in #ship-talkers and find out!
 
-```bash
-bun install
-```
+## Tech stack
 
-To run:
-
-```bash
-bun run src/index.ts
-```
-
-This project was created using `bun init` in bun v1.1.30. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+- Bolt and @slack/web-api for the Slack parts of the bot
+- Preact, Satori and Resvg for generating the image
+- Zod for `.env` and Slack analytics API checking
+- [Bun](https://bun.sh) for running the bot itself
