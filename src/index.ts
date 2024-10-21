@@ -135,7 +135,9 @@ bolt.message(async ({ message }) => {
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
-        "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!",
+        mode == Mode.LastYear
+          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!"
+          : undefined,
       filename: "shiptalkers.png",
       file: png,
       thread_ts: message.ts,
