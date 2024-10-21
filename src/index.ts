@@ -89,11 +89,12 @@ bolt.message(async ({ message }) => {
       ).replace(":range", wakaMode)
     );
     if (!wakaResponse.ok) {
-      return slack.chat.postMessage({
+      await slack.chat.postMessage({
         channel: message.channel,
         text: "Failed to fetch WakaTime data!\nPlease go to https://waka.hackclub.com/settings#permissions and set the time range to `-1`",
         thread_ts: message.ts,
       });
+      return;
     }
     const waka = await wakaResponse.json();
     const codingTimeSeconds: number = waka.data.total_seconds;
