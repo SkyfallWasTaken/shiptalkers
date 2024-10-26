@@ -10,10 +10,10 @@ export interface FinalData {
     displayName: string;
     username: string;
   };
-  github: {
+  /* github: {
     username: string;
     url: string;
-  };
+  }; */
   codingTimeSeconds: number;
   slackTimeEstimate: {
     seconds: number;
