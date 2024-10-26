@@ -32,9 +32,9 @@ export async function fetchMemberAnalyticsData(
   formData.append("token", xoxc);
   if (mode != Mode.Last30Days) {
     const currentDate = Temporal.Now.plainDateISO();
-    const threeDaysAgo = currentDate.subtract({ days: 3 });
-    const startDate = threeDaysAgo.subtract({ years: 1 });
-    const formattedEndDate = threeDaysAgo.toString();
+    const oneWeekAgo = currentDate.subtract({ weeks: 1 });
+    const startDate = oneWeekAgo.subtract({ years: 1 });
+    const formattedEndDate = oneWeekAgo.toString();
     const formattedStartDate = startDate.toString();
     console.log(
       `[DEBUG] Fetching analytics data from ${formattedStartDate} to ${formattedEndDate}`
@@ -64,7 +64,7 @@ export async function fetchMemberAnalyticsData(
   );
 
   const json = await response.json();
-  // console.log(json);
+  console.log(json);
   const data = AnalyticsResult.parse(json);
   if (!data.ok) {
     throw new Error("Failed to fetch analytics data");
