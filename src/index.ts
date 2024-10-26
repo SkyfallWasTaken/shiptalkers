@@ -99,12 +99,12 @@ bolt.message(async ({ message }) => {
     const waka = await wakaResponse.json();
     const codingTimeSeconds: number = waka.data.total_seconds;
     const slackTimeEstimateSecs = Math.floor(
-      slackAnalytics.messages_posted * 30 +
-        slackAnalytics.reactions_added * 5 +
-        slackAnalytics.days_active_desktop * 60 * 20 +
+      slackAnalytics.messages_posted * 50 +
+        slackAnalytics.reactions_added * 12 +
+        slackAnalytics.days_active_desktop * 60 * 35 +
         (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
           60 *
-          10
+          30
     );
 
     // Work out the percentage of more time spent on slack
