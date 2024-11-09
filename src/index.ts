@@ -52,7 +52,7 @@ bolt.message(async ({ message }) => {
 
     const oneYear = message.text?.toLowerCase().includes("one year") || false;
     const adrianMethod =
-      message.text?.toLowerCase().includes("<@U079A6KNYB1> method") || false;
+      message.text?.toLowerCase().includes("adrian method") || false;
     const mode = adrianMethod
       ? Mode.AdrianMethod
       : oneYear
