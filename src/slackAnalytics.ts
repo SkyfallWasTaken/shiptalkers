@@ -30,19 +30,33 @@ export async function fetchMemberAnalyticsData(
 ) {
   const formData = new FormData();
   formData.append("token", xoxc);
-  if (mode != Mode.Last30Days) {
+  if (mode === Mode.AdrianMethod) {
+    // AdrianMethod fetches all-time analytics
+    console.log(`[DEBUG] Fetching all-time analytics data.`);
+    formData.append("date_range", "all_time");
+  } else if (mode === Mode.Last30Days) {
+    // Last30Days handles only the last 30 days
+    console.log(`[DEBUG] Fetching analytics data for the last 30 days.`);
+    formData.append("date_range", "30d");
+  } else {
+    // For other modes (e.g., LastYear), calculate start and end dates
     const currentDate = Temporal.Now.plainDateISO();
     const oneWeekAgo = currentDate.subtract({ weeks: 1 });
     const startDate = oneWeekAgo.subtract({ years: 1 });
-    const formattedEndDate = oneWeekAgo.toString();
-    const formattedStartDate = startDate.toString();
+
+    // Subtract 4 days from both startDate and oneWeekAgo
+    const adjustedEndDate = oneWeekAgo.subtract({ days: 4 });
+    const adjustedStartDate = startDate.subtract({ days: 4 });
+
+    const formattedEndDate = adjustedEndDate.toString();
+    const formattedStartDate = adjustedStartDate.toString();
+
     console.log(
       `[DEBUG] Fetching analytics data from ${formattedStartDate} to ${formattedEndDate}`
     );
+
     formData.append("start_date", formattedStartDate);
     formData.append("end_date", formattedEndDate);
-  } else {
-    formData.append("date_range", "30d");
   }
   formData.append("count", "1");
   formData.append("sort_column", "username");
