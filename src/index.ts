@@ -1,3 +1,6 @@
+// Hi. You're probably here because you want to hack on the Shiptalkers codebase!
+// A fair bit of warning: this file was _very_ hurriedly written at 2am in the morning,
+// so it's not exactly the best. I promise the other files have better code!
 import "dotenv/config";
 import { z } from "zod";
 import { fetchMemberAnalyticsData } from "./slackAnalytics";
@@ -52,7 +55,7 @@ bolt.message(async ({ message }) => {
 
     const oneYear = message.text?.toLowerCase().includes("one year") || false;
     const adrianMethod =
-      message.text?.toLowerCase().includes("adrian method") || false;
+      message.text?.toLowerCase().includes("all time") || false;
     const mode = adrianMethod
       ? Mode.AdrianMethod
       : oneYear
