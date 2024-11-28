@@ -138,12 +138,13 @@ bolt.message(async ({ message }) => {
     console.table(flattenObject(overallProfile));
     const png = await generateImage(overallProfile);
 
+    const ad = "_Also check out #high-seas-monitor for stock updates and new items!_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
         mode == Mode.LastYear
-          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!"
-          : undefined,
+          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!\n" + ad
+          : ad,
       filename: "shiptalkers.png",
       file: png,
       thread_ts: message.ts,
