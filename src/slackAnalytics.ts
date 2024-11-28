@@ -33,7 +33,7 @@ export async function fetchMemberAnalyticsData(
   if (mode === Mode.AdrianMethod) {
     // AdrianMethod fetches all-time analytics
     console.log(`[DEBUG] Fetching all-time analytics data.`);
-    formData.append("date_range", "all_time");
+    formData.append("date_range", "all");
   } else if (mode === Mode.Last30Days) {
     // Last30Days handles only the last 30 days
     console.log(`[DEBUG] Fetching analytics data for the last 30 days.`);
@@ -78,7 +78,6 @@ export async function fetchMemberAnalyticsData(
   );
 
   const json = await response.json();
-  console.log(json);
   const data = AnalyticsResult.parse(json);
   if (!data.ok) {
     throw new Error("Failed to fetch analytics data");
