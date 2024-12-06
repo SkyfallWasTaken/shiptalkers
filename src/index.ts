@@ -138,7 +138,7 @@ bolt.message(async ({ message }) => {
     console.table(flattenObject(overallProfile));
     const png = await generateImage(overallProfile);
 
-    const ad = "_Also check out #high-seas-monitor for stock updates and new items!_";
+    const ad = "_Also check out #rate-my-ship for feedback on your ships! :pirate-ship:_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
