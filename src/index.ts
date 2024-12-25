@@ -138,7 +138,7 @@ bolt.message(async ({ message }) => {
     console.table(flattenObject(overallProfile));
     const png = await generateImage(overallProfile);
 
-    const ad = "_Also check out #rate-my-ship for feedback on your ships! :pirate-ship:_";
+    const ad = "_*Want to design things with Figma for High Seas? <https://dub.sh/waka|Check out WakaTime for Figma!>*_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
