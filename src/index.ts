@@ -53,14 +53,23 @@ bolt.message(async ({ message }) => {
     if (slackInfo.user?.is_bot) return;
     if (!slackProfile) throw new Error("No profile found");
 
+    if (message.text?.toLowerCase().includes("all")) {
+      await slack.chat.postMessage({
+        channel: message.channel,
+        text: "All time isn't added due to Slack limitations. Try `one month` or `one year` instead.",
+        thread_ts: message.ts,
+      });
+      return;
+    }
+
     const oneYear = message.text?.toLowerCase().includes("one year") || false;
     const adrianMethod =
       message.text?.toLowerCase().includes("adrian method") || false;
     const mode = adrianMethod
       ? Mode.AdrianMethod
       : oneYear
-        ? Mode.LastYear
-        : Mode.Last30Days;
+      ? Mode.LastYear
+      : Mode.Last30Days;
     const slackAnalytics = await fetchMemberAnalyticsData(
       slackInfo.user?.name!,
       env.XOXC,
@@ -138,12 +147,14 @@ bolt.message(async ({ message }) => {
     console.table(flattenObject(overallProfile));
     const png = await generateImage(overallProfile);
 
-    const ad = "_*Want to design things with Figma for High Seas? <https://dub.sh/waka|Check out WakaTime for Figma!>*_";
+    const ad =
+      "_*Want to design things with Figma for High Seas? <https://dub.sh/waka|Check out WakaTime for Figma!>*_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
         mode == Mode.LastYear
-          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!\n" + ad
+          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!\n" +
+            ad
           : ad,
       filename: "shiptalkers.png",
       file: png,
