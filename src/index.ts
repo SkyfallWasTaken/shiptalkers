@@ -148,7 +148,7 @@ bolt.message(async ({ message }) => {
     const png = await generateImage(overallProfile);
 
     const ad =
-      "_*Looking for an unblocked tempmail service? <https://go.skyfall.dev/vortex|Check out Vortex!>*_";
+      "_*Want to design things with Figma for High Seas? <https://dub.sh/waka|Check out WakaTime for Figma!>*_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
       initial_comment:
