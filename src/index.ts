@@ -53,7 +53,7 @@ bolt.message(async ({ message }) => {
     if (slackInfo.user?.is_bot) return;
     if (!slackProfile) throw new Error("No profile found");
 
-    if (message.text?.toLowerCase().includes("all")) {
+    if (message.text?.toLowerCase().includes("all") || message.text?.toLowerCase().includes("forever") || message.text?.toLowerCase().includes("lifetime")) {
       await slack.chat.postMessage({
         channel: message.channel,
         text: "All time isn't added due to Slack limitations. Try `one month` or `one year` instead.",
