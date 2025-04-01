@@ -154,7 +154,7 @@ bolt.message(async ({ message }) => {
       await sendErrorMessage(
         message.channel,
         message.ts,
-        "Failed to fetch WakaTime data!\nPlease go to https://waka.hackclub.com/settings#permissions and set the time range to `-1`"
+        `Failed to fetch WakaTime data!\n\`${await wakaResponse.text()}\``
       );
       return;
     }
