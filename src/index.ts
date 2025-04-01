@@ -1,24 +1,27 @@
-// Hi. You're probably here because you want to hack on the Shiptalkers codebase!
-// A fair bit of warning: this file was _very_ hurriedly written at 2am in the morning,
-// so it's not exactly the best. I promise the other files have better code!
 import "dotenv/config";
+import generateImage from "./image";
+import type { FinalData } from "./image";
 import { z } from "zod";
 import { fetchMemberAnalyticsData } from "./slackAnalytics";
 import { flattenObject } from "./util";
-import type { FinalData } from "./image";
-import generateImage from "./image";
 import { WebClient } from "@slack/web-api";
+import { Temporal } from "@js-temporal/polyfill";
 const { App } = await import("@slack/bolt");
-
-import { Temporal, toTemporalInstant } from "@js-temporal/polyfill";
-// @ts-ignore
-Date.prototype.toTemporalInstant = toTemporalInstant;
 
 export enum Mode {
   Last30Days,
   LastYear,
   AdrianMethod,
 }
+
+// Constants for time calculations
+const TIME_CONSTANTS = {
+  SECONDS_PER_MESSAGE: 50,
+  SECONDS_PER_REACTION: 12,
+  MINUTES_PER_DESKTOP_DAY: 35,
+  MINUTES_PER_MOBILE_DAY: 30,
+  SECONDS_PER_MINUTE: 60,
+};
 
 export const Env = z.object({
   WORKSPACE: z.string(),
@@ -29,6 +32,7 @@ export const Env = z.object({
   SLACK_APP_TOKEN: z.string(),
   WAKATIME_STATS_ENDPOINT: z.string().url().includes(":id"),
   PORT: z.number().optional(),
+  AD: z.string().default(""),
 });
 const env = Env.parse(process.env);
 env.XOXD = decodeURIComponent(env.XOXD);
@@ -40,114 +44,138 @@ const bolt = new App({
   socketMode: true,
 });
 
+// Helper functions
+function determineMode(messageText: string | undefined): Mode {
+  const text = messageText?.toLowerCase() || "";
+  if (text.includes("adrian method")) return Mode.AdrianMethod;
+  if (text.includes("one year")) return Mode.LastYear;
+  return Mode.Last30Days;
+}
+
+function getWakaTimeMode(mode: Mode): string {
+  switch (mode) {
+    case Mode.LastYear:
+      return "last_year";
+    case Mode.AdrianMethod:
+      return "all_time";
+    default:
+      return "last_30_days";
+  }
+}
+
+function getStartDate(mode: Mode): string {
+  const currentDate = Temporal.Now.plainDateISO();
+  switch (mode) {
+    case Mode.LastYear:
+      return currentDate.subtract({ years: 1 }).toString();
+    case Mode.AdrianMethod:
+      return currentDate.toString();
+    default:
+      return currentDate.subtract({ months: 1 }).toString();
+  }
+}
+
+function calculateSlackTimeEstimate(analytics: any): number {
+  return Math.floor(
+    analytics.messages_posted * TIME_CONSTANTS.SECONDS_PER_MESSAGE +
+      analytics.reactions_added * TIME_CONSTANTS.SECONDS_PER_REACTION +
+      analytics.days_active_desktop *
+        TIME_CONSTANTS.SECONDS_PER_MINUTE *
+        TIME_CONSTANTS.MINUTES_PER_DESKTOP_DAY +
+      (analytics.days_active_android + analytics.days_active_ios) *
+        TIME_CONSTANTS.SECONDS_PER_MINUTE *
+        TIME_CONSTANTS.MINUTES_PER_MOBILE_DAY
+  );
+}
+
+async function sendErrorMessage(
+  channel: string,
+  thread_ts: string,
+  message: string
+) {
+  await slack.chat.postMessage({
+    channel,
+    text: message,
+    thread_ts,
+  });
+}
+
 bolt.message(async ({ message }) => {
-  if (!message.subtype && !message.thread_ts) {
+  // Only process direct messages that aren't in threads
+  if (message.subtype || message.thread_ts) return;
+
+  try {
     const slackProfile = (
       await slack.users.profile.get({
         user: message.user,
       })
     ).profile;
+
     const slackInfo = await slack.users.info({
       user: message.user,
     });
+
     if (slackInfo.user?.is_bot) return;
     if (!slackProfile) throw new Error("No profile found");
 
+    // Handle specific keywords
     if (
       message.text?.toLowerCase().includes("all") ||
       message.text?.toLowerCase().includes("forever") ||
       message.text?.toLowerCase().includes("lifetime")
     ) {
-      await slack.chat.postMessage({
-        channel: message.channel,
-        text: "All time isn't added due to Slack limitations. Try `one month` or `one year` instead.",
-        thread_ts: message.ts,
-      });
+      await sendErrorMessage(
+        message.channel,
+        message.ts,
+        "All time isn't added due to Slack limitations. Try `one month` or `one year` instead."
+      );
       return;
     }
 
-    const oneYear = message.text?.toLowerCase().includes("one year") || false;
-    const adrianMethod =
-      message.text?.toLowerCase().includes("adrian method") || false;
-    const mode = adrianMethod
-      ? Mode.AdrianMethod
-      : oneYear
-        ? Mode.LastYear
-        : Mode.Last30Days;
+    const mode = determineMode(message.text);
     const slackAnalytics = await fetchMemberAnalyticsData(
       slackInfo.user?.name!,
       env.XOXC,
       env.XOXD,
       env.WORKSPACE,
-      mode,
+      mode
     );
 
-    /*
-    const rawGithubUrl =
-      Object.values(slackProfile.fields!).find((field) =>
-        field.value?.includes("github.com")
-      )?.value || "https://github.com/ghost"; // FIXME: yes
-    */
-    const avatarUrl =
-      slackProfile.image_original ||
-      "https://ca.slack-edge.com/T0266FRGM-U07SPF9D4BU-g7bf54aa89eb-48";
-    /*
-    if (!rawGithubUrl) throw new Error("No github url found");
-    const githubUrl = new URL(rawGithubUrl);
-    const githubUsername = githubUrl.pathname.split("/")[1];
-    */
-    const wakaMode = (() => {
-      if (mode == Mode.LastYear) return "last_year";
-      if (mode == Mode.AdrianMethod) return "all_time";
-      return "last_30_days";
-    })();
-    const startDate = (() => {
-      const currentDate = Temporal.Now.plainDateISO();
-      if (mode == Mode.LastYear)
-        return currentDate.subtract({ years: 1 }).toString();
-      if (mode == Mode.AdrianMethod) return currentDate.toString();
-      return currentDate.subtract({ weeks: 1 }).toString();
-    })();
+    const wakaMode = getWakaTimeMode(mode);
+    const startDate = getStartDate(mode);
 
     const baseEndpoint = env.WAKATIME_STATS_ENDPOINT.replace(
       ":id",
-      slackAnalytics.user_id,
+      slackAnalytics.user_id
     ).replace(":range", wakaMode);
+
     const wakaResponse = await fetch(`${baseEndpoint}?start_date=${startDate}`);
     if (!wakaResponse.ok) {
-      await slack.chat.postMessage({
-        channel: message.channel,
-        text: "Failed to fetch WakaTime data!\nPlease go to https://waka.hackclub.com/settings#permissions and set the time range to `-1`",
-        thread_ts: message.ts,
-      });
+      await sendErrorMessage(
+        message.channel,
+        message.ts,
+        "Failed to fetch WakaTime data!\nPlease go to https://waka.hackclub.com/settings#permissions and set the time range to `-1`"
+      );
       return;
     }
+
     const waka = await wakaResponse.json();
     const codingTimeSeconds: number = waka.data.total_seconds;
-    const slackTimeEstimateSecs = Math.floor(
-      slackAnalytics.messages_posted * 50 +
-        slackAnalytics.reactions_added * 12 +
-        slackAnalytics.days_active_desktop * 60 * 35 +
-        (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
-          60 *
-          30,
-    );
+    const slackTimeEstimateSecs = calculateSlackTimeEstimate(slackAnalytics);
 
     // Work out the percentage of more time spent on slack
     const percentage = Math.round(
-      ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100,
+      ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100
     );
 
     const overallProfile: FinalData = {
-      avatarUrl,
+      avatarUrl:
+        slackProfile.image_original ||
+        "https://hc-cdn.hel1.your-objectstorage.com/s/v3/a3ed8a745a17f92f8a16a00dd79e0218930cf461_image.png", // A ghost!
       slack: {
         displayName: slackAnalytics.display_name,
         username: slackAnalytics.username,
       },
-      /* github: {
-        username: githubUsername,
-        url: rawGithubUrl,
-      }, */
       codingTimeSeconds,
       slackTimeEstimate: {
         seconds: slackTimeEstimateSecs,
@@ -158,21 +186,28 @@ bolt.message(async ({ message }) => {
     console.table(flattenObject(overallProfile));
     const png = await generateImage(overallProfile);
 
-    const ad =
-      "_*Want to design things with Figma for High Seas? <https://dub.sh/waka|Check out WakaTime for Figma!>*_";
     const fileUploadResponse = await slack.filesUploadV2({
       channel_id: env.SLACK_CHANNEL_ID,
-      initial_comment:
-        mode == Mode.LastYear
-          ? "*Note: Coding time is calculated using Hackatime data,* which means that it only includes the time logged since Hackatime was released.\n\nThe Slack time is accurate though!\n" +
-            ad
-          : ad,
+      initial_comment: env.AD,
       filename: "shiptalkers.png",
       file: png,
       thread_ts: message.ts,
     });
+
     if (!fileUploadResponse.ok) throw new Error("Failed to upload file");
+  } catch (error) {
+    console.error("Error processing message:", error);
+    try {
+      await sendErrorMessage(
+        message.channel,
+        message.ts,
+        "An error occurred while processing your request."
+      );
+    } catch (e) {
+      console.error("Failed to send error message:", e);
+    }
   }
 });
+
 await bolt.start(env.PORT || 3000);
 console.log("⚡️ Shiptalkers is running!");
