@@ -10,7 +10,7 @@ import generateImage from "./image";
 import { WebClient } from "@slack/web-api";
 const { App } = await import("@slack/bolt");
 
-import { toTemporalInstant } from "@js-temporal/polyfill";
+import { Temporal, toTemporalInstant } from "@js-temporal/polyfill";
 // @ts-ignore
 Date.prototype.toTemporalInstant = toTemporalInstant;
 
@@ -27,7 +27,7 @@ export const Env = z.object({
   XOXD: z.string().startsWith("xoxd-", "XOXD is invalid"),
   XOXB: z.string().startsWith("xoxb-", "XOXB is invalid"),
   SLACK_APP_TOKEN: z.string(),
-  WAKATIME_STATS_ENDPOINT: z.string().url().includes(":id").includes(":range"),
+  WAKATIME_STATS_ENDPOINT: z.string().url().includes(":id"),
   PORT: z.number().optional(),
 });
 const env = Env.parse(process.env);
@@ -53,7 +53,11 @@ bolt.message(async ({ message }) => {
     if (slackInfo.user?.is_bot) return;
     if (!slackProfile) throw new Error("No profile found");
 
-    if (message.text?.toLowerCase().includes("all") || message.text?.toLowerCase().includes("forever") || message.text?.toLowerCase().includes("lifetime")) {
+    if (
+      message.text?.toLowerCase().includes("all") ||
+      message.text?.toLowerCase().includes("forever") ||
+      message.text?.toLowerCase().includes("lifetime")
+    ) {
       await slack.chat.postMessage({
         channel: message.channel,
         text: "All time isn't added due to Slack limitations. Try `one month` or `one year` instead.",
@@ -68,14 +72,14 @@ bolt.message(async ({ message }) => {
     const mode = adrianMethod
       ? Mode.AdrianMethod
       : oneYear
-      ? Mode.LastYear
-      : Mode.Last30Days;
+        ? Mode.LastYear
+        : Mode.Last30Days;
     const slackAnalytics = await fetchMemberAnalyticsData(
       slackInfo.user?.name!,
       env.XOXC,
       env.XOXD,
       env.WORKSPACE,
-      mode
+      mode,
     );
 
     /*
@@ -97,12 +101,19 @@ bolt.message(async ({ message }) => {
       if (mode == Mode.AdrianMethod) return "all_time";
       return "last_30_days";
     })();
-    const wakaResponse = await fetch(
-      env.WAKATIME_STATS_ENDPOINT.replace(
-        ":id",
-        slackAnalytics.user_id
-      ).replace(":range", wakaMode)
-    );
+    const startDate = (() => {
+      const currentDate = Temporal.Now.plainDateISO();
+      if (mode == Mode.LastYear)
+        return currentDate.subtract({ years: 1 }).toString();
+      if (mode == Mode.AdrianMethod) return currentDate.toString();
+      return currentDate.subtract({ weeks: 1 }).toString();
+    })();
+
+    const baseEndpoint = env.WAKATIME_STATS_ENDPOINT.replace(
+      ":id",
+      slackAnalytics.user_id,
+    ).replace(":range", wakaMode);
+    const wakaResponse = await fetch(`${baseEndpoint}?start_date=${startDate}`);
     if (!wakaResponse.ok) {
       await slack.chat.postMessage({
         channel: message.channel,
@@ -119,12 +130,12 @@ bolt.message(async ({ message }) => {
         slackAnalytics.days_active_desktop * 60 * 35 +
         (slackAnalytics.days_active_android + slackAnalytics.days_active_ios) *
           60 *
-          30
+          30,
     );
 
     // Work out the percentage of more time spent on slack
     const percentage = Math.round(
-      ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100
+      ((slackTimeEstimateSecs - codingTimeSeconds) / codingTimeSeconds) * 100,
     );
 
     const overallProfile: FinalData = {

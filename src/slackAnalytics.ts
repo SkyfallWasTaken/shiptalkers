@@ -26,7 +26,7 @@ export async function fetchMemberAnalyticsData(
   xoxc: string,
   xoxd: string,
   workspace: string,
-  mode: Mode = Mode.Last30Days
+  mode: Mode = Mode.Last30Days,
 ) {
   const formData = new FormData();
   formData.append("token", xoxc);
@@ -48,7 +48,7 @@ export async function fetchMemberAnalyticsData(
     const formattedStartDate = adjustedStartDate.toString();
 
     console.log(
-      `[DEBUG] Fetching analytics data from ${formattedStartDate} to ${formattedEndDate}`
+      `[DEBUG] Fetching analytics data from ${formattedStartDate} to ${formattedEndDate}`,
     );
 
     formData.append("start_date", formattedStartDate);
@@ -70,11 +70,11 @@ export async function fetchMemberAnalyticsData(
         Authority: `${workspace}.slack.com`,
         Cookie: authCookie, // We don't really need anything fancy here.
       },
-    }
+    },
   );
 
   const json = await response.json();
-  console.log(json)
+  console.log(json);
   const data = AnalyticsResult.parse(json);
   if (!data.ok) {
     throw new Error("Failed to fetch analytics data");
@@ -83,7 +83,7 @@ export async function fetchMemberAnalyticsData(
     console.warn(`[WARN] Found ${data.num_found} users`);
   }
   const member = data.member_activity.find(
-    (member) => member.username === username
+    (member) => member.username === username,
   );
 
   if (!member) {

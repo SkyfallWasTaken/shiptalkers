@@ -3,8 +3,8 @@ on: [push]
 
 jobs:
   deploy-to-nest:
-      runs-on: ubuntu-latest
-      steps:
+    runs-on: ubuntu-latest
+    steps:
       - name: Connect to ssh, pull and systemctl restart
         uses: appleboy/ssh-action@v1.0.3
         with:
