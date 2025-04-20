@@ -31,7 +31,6 @@ export const Env = z.object({
   XOXB: z.string().startsWith("xoxb-", "XOXB is invalid"),
   SLACK_APP_TOKEN: z.string(),
   WAKATIME_STATS_ENDPOINT: z.string().url().includes(":id"),
-  PORT: z.number().optional(),
   AD: z.string().default(""),
 });
 const env = Env.parse(process.env);
@@ -209,5 +208,5 @@ bolt.message(async ({ message }) => {
   }
 });
 
-await bolt.start(env.PORT || 3000);
+await bolt.start();
 console.log("⚡️ Shiptalkers is running!");
